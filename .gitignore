@@ -1,0 +1,2 @@
+# Don't include the .DS_Store file in Git.
+.DS_Store
