@@ -8,7 +8,7 @@ Revision 1.
 {
   "status": "ok", // Must be "ok" or "error".
   "error": {}, // Must be a non-empty object for "error" statuses.
-  "data": {}, // Must contain the data for the response.
+  "data": {}, // Must contain the data for the response, if any.
 }
 ```
 
