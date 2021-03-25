@@ -33,6 +33,7 @@ Structure of Colonial Wars map save files.
     ],
     "tileType": "grass", // Must be rock, grass, or sand.
     "defaultHeight": 0 // Must be 0, 1, or 2
-  }
+  },
+  "description": "A fight in the lush valley." // Must be a string containing a description of the map.
 }
 ```
