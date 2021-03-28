@@ -3,7 +3,7 @@ This document defines the CWDTP, or Colonial Wars Data Transfer Protocol, which 
 realtime communication protocol designed for use over WebSockets. All realtime communication
 between Colonial Wars servers and clients must use this protocol.
 
-Revision 1.
+Revision 2.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -49,7 +49,8 @@ as soon as possible with a JSON string. The JSON string MUST have the following 
 {
   "event": "cwdtp::server-hello",
   "meta": {
-    "res_key": "<response key in base64 format>"
+    "res_key": "<response key in base64 format>",
+    "cid": "<connection id>"
   },
   "data": []
 }
@@ -58,22 +59,27 @@ The ``data`` field MUST exist and it MUST be an empty JSON array. The value of t
 in the ``meta`` object MUST be a SHA-1 hash of the ``req_key`` sent by the client, combined with the
 literal string ``"FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3"``. The hash must be in base64 format.
 
+#### 2.3.1 Connection ID
+All connections MUST have an ID. This ID is sent along with the ``cwdtp::server-hello`` event. The ID
+must be the value of the ``cid`` field in the ``meta`` object. The ID could be of any format and length,
+but it is RECOMMENDED that the ID is at least 16 characters long.
+
 ### 2.4. Aborting the Handshake
+To abort the handshake, an endpoint must send a ``cwdtp::abort`` event with a reason in the ``meta``
+field of the event.
+
 The client MUST abort the handshake if:
 - A ``cwdtp::server-hello`` message is not sent within 30 seconds after the client sent its
 ``cwdtp::client-hello`` message.
 - The ``res_key`` received does not equal the hash of the ``req_key`` combined with the literal string
 ``"FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3"``.
+- No connection ID is received in the ``cwdtp::server-hello`` message.
 
 The server MUST abort the handshake if:
 - A ``cwdtp::client-hello`` message is not sent within 30 seconds after the transport-layer connection.
 
 Either client or server could abort the handshake if the message structure does not conform to
 [Section 3](#3.-message-structure).
-
-### 2.5. Usage of Response Key as Client ID
-The ``res_key`` the server generated as part of the opening handshake MAY be used as the client's
-connection ID.
 
 ## 3. Message Structure
 All messages transmitted in this protocol are REQUIRED to be in JSON format. Specifically, each message
@@ -154,3 +160,4 @@ if an user attempted to emit a reserved event.
 - ``cwdtp::close``: Connection closure initiator.
 - ``cwdtp::close-ack``: Connection closure acknowledgement. Neither endpoint could send events
 after this event.
+- ``cwdtp::abort``: Aborts the handshake.
