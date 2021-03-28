@@ -3,7 +3,7 @@ This document defines the CWDTP, or Colonial Wars Data Transfer Protocol, which 
 realtime communication protocol designed for use over WebSockets. All realtime communication
 between Colonial Wars servers and clients must use this protocol.
 
-Revision 2.
+Revision 3.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
