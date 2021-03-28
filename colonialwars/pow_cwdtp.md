@@ -65,8 +65,9 @@ must be the value of the ``cid`` field in the ``meta`` object. The ID could be o
 but it is RECOMMENDED that the ID is at least 16 characters long.
 
 ### 2.4. Aborting the Handshake
-To abort the handshake, an endpoint must send a ``cwdtp::abort`` event with a reason in the ``meta``
-field of the event.
+To abort the handshake, an endpoint must send a ``cwdtp::close`` event with the ``error`` field
+of the ``meta`` object set to true. Then, the endpoint that sent the close event MUST initiate
+the closure of the transport-layer.
 
 The client MUST abort the handshake if:
 - A ``cwdtp::server-hello`` message is not sent within 30 seconds after the client sent its
@@ -160,4 +161,3 @@ if an user attempted to emit a reserved event.
 - ``cwdtp::close``: Connection closure initiator.
 - ``cwdtp::close-ack``: Connection closure acknowledgement. Neither endpoint could send events
 after this event.
-- ``cwdtp::abort``: Aborts the handshake.
