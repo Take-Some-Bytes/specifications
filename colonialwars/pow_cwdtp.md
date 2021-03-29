@@ -1,9 +1,9 @@
 # Protocol over WebSockets (POW): Colonial Wars Data Transfer Protocol
 This document defines the CWDTP, or Colonial Wars Data Transfer Protocol, which is a
-realtime communication protocol designed for use over WebSockets. All realtime communication
-between Colonial Wars servers and clients must use this protocol.
+realtime communication protocol designed for use over a raw transport-layer protocol.
+All realtime communication between Colonial Wars servers and clients must use this protocol.
 
-Revision 3.
+Revision 4.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -25,7 +25,7 @@ choice.
 If the client is using WebSockets:
 - The client MUST send a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``.
 - If the server does not respond with a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``,
-the client MUST abort the connection immediately.
+the client MUST abort the handshake immediately.
 
 ### 2.2. Client Opening Message
 Once the transport-layer connection is established, the client MUST send a JSON string, encoded in UTF-8,
@@ -128,7 +128,7 @@ Upon receiving a ping, a client MUST send back a ``cwdtp::pong`` event as soon a
 A server SHOULD forcefully close the connection if a pong is not sent after a set amount of time.
 
 ### 4.2. The cwdtp::pong Event
-The ``cwdtp::pong`` event MUST only be sent by a client; if a server receives a ``cwdtp::pong`` event,
+The ``cwdtp::pong`` event MUST only be sent by a client; if a client receives a ``cwdtp::pong`` event,
 it MUST close the connection immediately. Pong events must not have any payload.
 
 The client MUST NOT send a pong without receiving a ping first.
