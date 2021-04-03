@@ -1,9 +1,10 @@
 # Protocol over WebSockets (POW): Colonial Wars Data Transfer Protocol
 This document defines the CWDTP, or Colonial Wars Data Transfer Protocol, which is a
-realtime communication protocol designed for use over a raw transport-layer protocol.
+realtime communication protocol designed for use over WebSockets or some other reliable
+transport-layer protocol.
 All realtime communication between Colonial Wars servers and clients must use this protocol.
 
-Revision 4.
+Revision 5.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -16,20 +17,23 @@ of the key word ("MUST", "SHOULD", "MAY", etc.) used in introducing the algorith
 
 ## 2. Opening Handshake
 ### 2.1. Transport-layer Handshake 
-This protocol MUST be used over an existing transport-layer protocol, and it SHOULD be reliable.
-Protocols like WebSockets or TCP are both acceptable.
+Even though this protocol is called a Protocol over WebSockets (POW), it is not required for
+implementors to use WebSockets, though it is RECOMMENDED to do so. Any reliable transport-layer
+could be used, such as TCP or RUDP.
 
 The client MUST first complete the opening handshake for the transport-layer protocol of their
 choice.
 
-If the client is using WebSockets:
+If the client and server are using WebSockets:
 - The client MUST send a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``.
 - If the server does not respond with a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``,
 the client MUST abort the handshake immediately.
+- If a server receives a WebSocket handshake that does not set the value of the ``Sec-WebSocket-Protocol``
+header to ``pow::cwdtp``, the server MUST reject the handshake.
 
 ### 2.2. Client Opening Message
-Once the transport-layer connection is established, the client MUST send a JSON string, encoded in UTF-8,
-that has the following structure:
+Once the transport-layer connection is established, the client MUST send a JSON string, encoded in
+UTF-8 or UTF-16, that has the following structure:
 ```json
 {
   "event": "cwdtp::client-hello",
@@ -57,7 +61,7 @@ as soon as possible with a JSON string. The JSON string MUST have the following 
 ```
 The ``data`` field MUST exist and it MUST be an empty JSON array. The value of the ``res_key`` field
 in the ``meta`` object MUST be a SHA-1 hash of the ``req_key`` sent by the client, combined with the
-literal string ``"FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3"``. The hash must be in base64 format.
+literal string "``FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3``". The hash must be in base64 format.
 
 #### 2.3.1 Connection ID
 All connections MUST have an ID. This ID is sent along with the ``cwdtp::server-hello`` event. The ID
@@ -73,7 +77,7 @@ The client MUST abort the handshake if:
 - A ``cwdtp::server-hello`` message is not sent within 30 seconds after the client sent its
 ``cwdtp::client-hello`` message.
 - The ``res_key`` received does not equal the hash of the ``req_key`` combined with the literal string
-``"FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3"``.
+"``FJcod23c-aodDJf-302-D38cadjeC2381-F8fad-AJD3``".
 - No connection ID is received in the ``cwdtp::server-hello`` message.
 
 The server MUST abort the handshake if:
@@ -93,10 +97,10 @@ must have the following structure:
 }
 ```
 The ``event`` field must be a JSON string. The ``meta`` field MUST be a JSON object, and implementations
-SHALL NOT put user data in the ``meta`` object. The ``data`` field MUST be a JSON array of arbitrary
-data, sent by the user.
+MUST NOT put user data in the ``meta`` object; the object is meant to transfer protocol metadata only.
+The ``data`` field MUST be a JSON array of arbitrary data, sent by the user. It MAY be empty.
 
-All messages must be transferred as UTF-16.
+All messages must be transferred as UTF-16 or UTF-8.
 
 ### 3.1. Transfer of Binary Data
 To transfer an arbitrary sequence of binary data, it is RECOMMENDED to:
@@ -116,6 +120,14 @@ To transfer an arbitrary sequence of binary data, it is RECOMMENDED to:
 
 3. Replace the occurance of the binary data with the object constructed in step 2.
 
+### 3.2. Valid Protocol Metadata.
+The only fields that could be used in the ``meta`` object are:
+- ``req_key``, ``res_key``, ``cid``: Usage defined in Sections 2.2-2.3;
+- ``reason``, ``error``: Usage defined in [Section 5.1](#5.1.-graceful-closure)
+
+An endpoint SHOULD immediately close the connection upon receiving invalid protocol
+metadata.
+
 ## 4. Heartbeat Mechanism
 The Colonial Wars Data Transfer Protocol uses the traditional ping/pong mechanism to ensure both sides
 of the connection are still alive.
@@ -125,7 +137,9 @@ The ``cwdtp::ping`` event MUST only be sent by the server; if a server receives 
 it MUST close the connection immediately. Ping events must not have any payload.
 
 Upon receiving a ping, a client MUST send back a ``cwdtp::pong`` event as soon as possible.
-A server SHOULD forcefully close the connection if a pong is not sent after a set amount of time.
+A server SHOULD forcefully close the connection if a pong is not received after a set amount of
+time. That said, a client should also forcefully close the connection if a ping is not received
+after a set amount of time.
 
 ### 4.2. The cwdtp::pong Event
 The ``cwdtp::pong`` event MUST only be sent by a client; if a client receives a ``cwdtp::pong`` event,
@@ -142,7 +156,9 @@ a JSON string. If the connection was closed as a result of an error, the endpoin
 ``error: true`` in the ``meta`` object.
 
 The other endpoint, after receiving a ``cwdtp::close`` event, MUST send back a ``cwdtp::close-ack``
-event; no payload is allowed, and the connection is considered closed.
+event; no payload is allowed, and the connection is considered closed. If a ``cwdtp::close-ack`` is
+not received in 30 seconds, then endpoint that sent the ``cwdtp::close`` event MAY forcefully close
+the connection.
 
 The endpoint that initiated the closure must then initiate the transport-layer connection closure.
 If the transport-layer connection is not closed within 30 seconds, the endpoint that received the
@@ -157,7 +173,17 @@ The following event names are reserved, and cannot be used by end-users. An erro
 if an user attempted to emit a reserved event.
 - ``cwdtp::client-hello``: The opening handshake event for the client.
 - ``cwdtp::server-hello``: The opening handshake event for the server.
-- ``cwdtp::ping`` and ``cwdtp::ping``: Heartbeat events.
+- ``cwdtp::ping`` and ``cwdtp::pong``: Heartbeat events.
 - ``cwdtp::close``: Connection closure initiator.
 - ``cwdtp::close-ack``: Connection closure acknowledgement. Neither endpoint could send events
 after this event.
+
+### 6.1. WebSocket Status Codes Used By This Protocol
+If the client and server are using WebSockets to implement this protocol, they MAY use the
+following WebSocket status codes:
+- ``4000``: The CWDTP handshake is being aborted.
+- ``4001``: The negotiated WebSocket sub-protocol is not ``pow::cwdtp``.
+- ``4002``: The CWDTP handshake timed out.
+- ``4003``: The CWDTP closing handshake timed out.
+- ``4004``: The connection failed a liveliness check (e.g. the server closes the connection
+because the client did not send a pong in the alloted time.)
