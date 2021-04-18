@@ -4,7 +4,7 @@ realtime communication protocol designed for use over WebSockets or some other r
 transport-layer protocol.
 All realtime communication between Colonial Wars servers and clients must use this protocol.
 
-Revision 5.
+Revision 6.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -25,11 +25,11 @@ The client MUST first complete the opening handshake for the transport-layer pro
 choice.
 
 If the client and server are using WebSockets:
-- The client MUST send a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``.
-- If the server does not respond with a ``Sec-WebSocket-Protocol`` header with the value ``pow::cwdtp``,
+- The client MUST send a ``Sec-WebSocket-Protocol`` header with the value ``pow.cwdtp``.
+- If the server does not respond with a ``Sec-WebSocket-Protocol`` header with the value ``pow.cwdtp``,
 the client MUST abort the handshake immediately.
 - If a server receives a WebSocket handshake that does not set the value of the ``Sec-WebSocket-Protocol``
-header to ``pow::cwdtp``, the server MUST reject the handshake.
+header to ``pow.cwdtp``, the server MUST reject the handshake.
 
 ### 2.2. Client Opening Message
 Once the transport-layer connection is established, the client MUST send a JSON string, encoded in
@@ -182,7 +182,7 @@ after this event.
 If the client and server are using WebSockets to implement this protocol, they MAY use the
 following WebSocket status codes:
 - ``4000``: The CWDTP handshake is being aborted.
-- ``4001``: The negotiated WebSocket sub-protocol is not ``pow::cwdtp``.
+- ``4001``: The negotiated WebSocket sub-protocol is not ``pow.cwdtp``.
 - ``4002``: The CWDTP handshake timed out.
 - ``4003``: The CWDTP closing handshake timed out.
 - ``4004``: The connection failed a liveliness check (e.g. the server closes the connection
