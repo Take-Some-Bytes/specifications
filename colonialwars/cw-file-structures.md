@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 1.
+Draft Revision 2.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -90,14 +90,14 @@ A Map Save File's structure is as follows:
     "defaultHeight": 0,
     // Must be a string containing a description of the map.
     "description": "A fight in the lush valley.",
-    // OPTIONAL: This specifies a Unit Data File which this Map Save File's unit data
-    // extends from.
+    // This specifies a Unit Data File which this Map Save File's unit data
+    // extends from. Must be "none" if this Map Save File does not extend unit data
     "unitDataExtends": "default",
-    // OPTIONAL: This specifies a Building Data File which this Map Save File's building data
-    // extends from.
+    // This specifies a Building Data File which this Map Save File's building data
+    // extends from. Must be "none" if this Map Save File does not extend unit data
     "buildingDataExtends": "default",
-    // OPTIONAL: This specifies a Graphics Data File which this Map Save File's graphics data
-    // extends from.
+    // This specifies a Graphics Data File which this Map Save File's graphics data
+    // extends from. Must be "none" if this Map Save File does not extend unit data
     "graphicsDataExtends": "default"
   },
   "data": {}
@@ -128,6 +128,9 @@ and ``"graphicsDataExtends"`` fields.
 
 Those fields could either specify a file path, OR they could use the keyword ``"default"``.
 The meaning of ``"default"`` is left up to the implementer. It MAY map to a file path.
+
+If a Map Save File has no dependencies, its ``"unitDataExtends"``, ``"buildingDataExtends"``,
+and ``"graphicsDataExtends"`` fields MUST all have the absolute value ``"none"``.
 
 ## 4. Unit Data File
 TODO
