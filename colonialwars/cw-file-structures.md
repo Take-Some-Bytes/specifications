@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 2.
+Draft Revision 3.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -53,8 +53,8 @@ A Map Save File's structure is as follows:
   "meta": {
     // Must only have alphanumerical characters and spaces
     "name": "Valley",
-    // Either Teams, KOTH, or Siege
-    "mode": "Teams",
+    // Either teams, koth, or siege. Case-insensitive.
+    "mode": "teams",
     // Must be a positive integer
     "maxPlayers": 40,
     "worldLimits": {
@@ -105,18 +105,21 @@ A Map Save File's structure is as follows:
 ```
 
 ### 3.1. Game Modes
+A Map Save File MUST specify a game mode in which the game is to be played in. The ``"mode"`` property
+specifies the game mode. It is case-insensitive.
+
 #### 3.1.1. Teams Mode
-The ``"Teams"`` game mode denotes a game in which the specified teams are supposed to fight
+The ``"teams"`` game mode denotes a game in which the specified teams are supposed to fight
 until only one team is left standing. How teams eliminate each other is up to the implementer
 to decide.
 
 #### 3.1.2. KOTH (King of the Hill) Mode
-The ``"KOTH"`` game mode denotes a game in which a team has to capture a given point and
+The ``"koth"`` game mode denotes a game in which a team has to capture a given point and
 hold that point for a specific amount of time. Contrary to the name of this mode, the
 point-to-capture does not have to be a hill.
 
 #### 3.1.3. Siege Mode
-The ``"Siege"`` game mode denotes a game in which one team defends a given position
+The ``"siege"`` game mode denotes a game in which one team defends a given position
 for a specific amount of time, while the other team(s) try to capture that point.
 
 ### 3.2. File Dependencies
