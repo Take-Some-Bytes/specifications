@@ -1,6 +1,11 @@
 # Save File Structures
 Structures of Colonial Wars save files.
 
+***DEPRECATED***: This structure definition for Colonial Wars save files is deprecated.
+See the [Colonial Wars File Structures](
+  https://github.com/Take-Some-Bytes/specifications/blob/main/colonialwars/cw-file-structures.md
+) specification instead.
+
 ## Map Save File structure
 Structure of Colonial Wars map save files.
 ```jsonc
