@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 3.
+Draft Revision 4.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -29,7 +29,7 @@ appropriate value".
 The general file format for Colonial Wars Files is as follows:
 ```json
 {
-  "configType": "<a string>",
+  "configType": "<string>",
   "meta": {},
   "data": {}
 }
@@ -100,7 +100,11 @@ A Map Save File's structure is as follows:
     // extends from. Must be "none" if this Map Save File does not extend unit data
     "graphicsDataExtends": "default"
   },
-  "data": {}
+  "data": {
+    // Must be an object, with only lowercase letters and underscores as its keys.
+    // See Section 6.1 for details.
+    "graphicsData": {}
+  }
 }
 ```
 
@@ -140,4 +144,53 @@ TODO
 ## 5. Building Data File
 TODO
 ## 6. Graphics Data File
-TODO
+For a JSON file to be treated as a Graphics Data File, its ``"configType"`` field MUST have the
+absolute value ``graphics-data``.
+
+A Graphics Data File's structure is as follows:
+```jsonc
+{
+  "configType": "graphics-data",
+  "meta": {
+    // Must only have alphanumeric characters and spaces.
+    "name": "Default Graphics"
+  },
+  // The "data" object's keys may only contain lowercase letters, numbers,
+  // and underscores. Every value MUST be an object.
+  "data": {
+    "flag": {
+      // Must match the corresponding key (look up).
+      "id": "flag",
+      // A name for the current graphic.
+      // May only have alphanumeric characters and spaces.
+      "name": "Flag",
+      // The path to the image to take this graphic from.
+      "imgPath": "/imgs/game-images/buildings-sheet.png",
+      // The start position of the sub-image to take from the file at
+      // "imgPath". This is useful for sprite sheets.
+      // Both x and y must be integers less than or equal to the
+      // width and height of the image, and greater than 0.
+      "position": { "x": 0, "y": 0 },
+      // The dimensions of the sub-image to take from the file at
+      // "imgPath". This is useful for sprite sheets.
+      "dimensions": { "width": 50, "height": 300 }
+    }
+  }
+}
+```
+
+### 6.1. Specifying a Graphic
+To specify a graphic, a new value must be entered into the "data" object of the
+Graphics Data File. Each value's key must be a string that only contains lowercase
+letters, numbers, and underscores.
+
+The corresponding value MUST be an object. Each graphics object must have the
+following fields:
+- ``"id"``: This MUST match the graphics object's key.
+- ``"name"``: This MUST be a string, with the above limitations.
+- ``"imgPath"``: This MUST be a string, AND a valid path to an image file.
+- ``"position"``: This MUST be an object with "x" and "y" as its properties. This
+specifies the position of the top-left corner of the graphic, relative to the
+size of the image at ``"imgPath"``.
+- ``"dimensions"``: This MUST be an object with "width" and "height" as its properties.
+This specifies the dimensions of the graphic.
