@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 4.
+Draft Revision 5.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -158,22 +158,36 @@ A Graphics Data File's structure is as follows:
   // The "data" object's keys may only contain lowercase letters, numbers,
   // and underscores. Every value MUST be an object.
   "data": {
-    "flag": {
+    "tree1": {
       // Must match the corresponding key (look up).
-      "id": "flag",
+      "id": "tree1",
       // A name for the current graphic.
       // May only have alphanumeric characters and spaces.
-      "name": "Flag",
-      // The path to the image to take this graphic from.
-      "imgPath": "/imgs/game-images/buildings-sheet.png",
-      // The start position of the sub-image to take from the file at
-      // "imgPath". This is useful for sprite sheets.
-      // Both x and y must be integers less than or equal to the
-      // width and height of the image, and greater than 0.
-      "position": { "x": 0, "y": 0 },
-      // The dimensions of the sub-image to take from the file at
-      // "imgPath". This is useful for sprite sheets.
-      "dimensions": { "width": 50, "height": 300 }
+      "name": "Tree 1",
+      // The path to the file to take this graphic's image and animations from.
+      "file": "/imgs/game-images/trees-sheet.png",
+      // How many angles the specified graphic has. May only be 1, 2, 4, or 8.
+      "angles": 1,
+      // Must be a boolean.
+      "hasAnimations": false,
+      // Data for the main image that will be show in-game, in information panels
+      // and/or as the actual entity.
+      "mainImg": {
+        // The X and Y position of the image, relative to the file named above.
+        "x": 0,
+        "y": 0,
+        // The width and height of the image.
+        "w": 200,
+        "h": 250
+      },
+      // The following are optional images that MAY be shown in-game. See more in
+      // Section 6.1.2.
+      "damaged1Img": null,
+      "damaged2Img": null,
+      "constructingImg": null,
+      // Animations the graphic has. This MUST be null if "hasAnimations" is false.
+      // Otherwise, it MUST be an object.
+      "animations": null
     }
   }
 }
@@ -188,9 +202,132 @@ The corresponding value MUST be an object. Each graphics object must have the
 following fields:
 - ``"id"``: This MUST match the graphics object's key.
 - ``"name"``: This MUST be a string, with the above limitations.
-- ``"imgPath"``: This MUST be a string, AND a valid path to an image file.
-- ``"position"``: This MUST be an object with "x" and "y" as its properties. This
-specifies the position of the top-left corner of the graphic, relative to the
-size of the image at ``"imgPath"``.
-- ``"dimensions"``: This MUST be an object with "width" and "height" as its properties.
-This specifies the dimensions of the graphic.
+- ``"file"``: This MUST be a string, AND a valid path to an image file.
+- ``"angles"``: This specifies how many angles the specified graphic has. It may only
+be 1, 2, 4, or 8. See [Section 6.1.1](#6.1.1.-graphic-angles) for how this affects a
+graphic's animations and main image.
+- ``"hasAnimations"``: This specifies whether the current graphic has animations
+associated with it. It MUST be a boolean.
+- ``"mainImg"``: See [Section 6.1.2](#6.1.2.-graphic-images).
+- ``"animations"``: See [Section 6.1.3](#6.1.3.-graphic-animations).
+
+If a graphics data parser encounters animation-related fields (in the ``"animations"`` object)
+and the ``"hasAnimations"`` field is false, the animations MUST be ignored. If the
+``"hasAnimations"`` field is true, but there are zero animation fields, an error
+MUST be thrown.
+
+#### 6.1.1. Graphic Angles
+Since units would likely have to be able to face left, right, forward, and backward, a graphic
+could have angles. A graphic could have either 1, 2, 4, or 8 angles. The number of angles a
+graphic has defines how the renderer draws the graphic, and how the image needs to be layed out.
+
+For example, if a graphic has 4 angles, the underlying file for the graphic must also have 4
+angles for each [image](#6.1.2.-graphic-images) and [animation](#6.1.3.-graphic-animations) of
+the graphic. This means that, for example, the part of the underlying file that houses the
+Main image of the graphic must contain 4 angles of the same image, stacked on top of each
+other, starting with the image that faces forward on the top, and moving down clockwise.
+In ASCII art, it MAY look like this:
+```none
+               __________________
+Main Image -[ |                  |
+            [ |  Forward-facing  |
+            [ |       Image      |
+            [ |                  |
+            [ |                  |
+            [ +------------------+
+            [ |                  |
+            [ |    Left-facing   |
+            [ |       Image      |
+            [ |                  |
+            [ |                  |
+            [ +------------------+
+            [ |                  |
+            [ |    Back-facing   |
+            [ |       Image      |
+            [ |                  |
+            [ |                  |
+            [ +------------------+
+            [ |                  |
+            [ |   Right-facing   |
+            [ |       Image      |
+            [ |                  |
+            [ |                  |
+            [ +------------------+
+```
+
+(Of course, you don't have to arrange your sub-images like this, but if you don't, the renderer
+would draw your entities as if they were walking backward all the time.)
+
+The same rules apply for graphic animations.
+
+#### 6.1.2. Graphic Images
+A graphic could have multiple *static* images associated with it. The allowed static images
+are: Main (``"mainImg"``), Damaged (``"damaged1Img"``), Heavily Damaged (``"damaged2Img"``),
+and Constructing (``"constructing1Img"``). Damaged, Heavily Damaged, and Constructing are only
+used for buildings.
+
+A graphics data parser SHOULD ignore unrecognized image fields.
+
+The Main image (``"mainImg"``) specifies the main image the graphic will be represented
+with in-game. The ``"mainImg"`` will be used for purposes such as display in buttons which
+wish to use the graphic's image, and may directly represent an entity if it has no
+animations.
+
+The Damaged image (``"damaged1Img"``) specifies the image that will be shown when the
+entity using this graphic is moderately damaged. This image only applies to buildings.
+
+The Heavily Damaged image (``"damaged2Img"``) specifies the image that will be shown
+when the entity using this graphic is heavily damaged. This image only applies to buildings.
+
+The Constructing image (``"constructingImg"``) specifies the image that will be shown
+when the entity using this graphic is currently under construction. This image only applies
+to buildings.
+
+#### 6.1.3. Graphic Animations
+A graphic could also have multiple *dynamic* animations associated with it.
+
+If ``"hasAnimations"`` is true, then animations MUST be specified for the current
+graphic. An example graphic with animations MAY look like this:
+```jsonc
+{
+  // Everything else is the same, *except* we now have animations.
+  "cannon1": {
+    "id": "cannon1",
+    "name": "Siege Cannon",
+    "file": "/imgs/game-images/units/siege-cannon.png",
+    "angles": 4,
+    "hasAnimations": true,
+    "mainImg": { "x": 0, "y": 0, "w": 40, "h": 40 },
+    // Now, for actual animations.
+    "animations": {
+      // Death Animation: when the unit dies.
+      "die": { "x": 160, "y": 160, "w": 320, "h": 160, "frameSize": 40 },
+      // Idle Animation: when the unit is idle.
+      "idle": { "x": 320, "y": 320, "w": 320, "h": 160, "frameSize": 40 },
+      // Walk Animation: when the unit is walking.
+      "walk": { "x": 480, "y": 480, "w": 320, "h": 160, "frameSize": 40 },
+      // Attack Animation: when the unit attacks.
+      "attack": { "x": 640, "y": 640, "w": 320, "h": 160, "frameSize": 40 },
+      // Reload Animation: when the unit reloads.
+      "reload": { "x": 800, "y": 800, "w": 320, "h": 160, "frameSize": 40 },
+    }
+  }
+}
+```
+
+The full list of acceptable animations are:
+- Death Animation (``"die"``): Played when the entity using this graphic dies.
+- Idle Animation (``"idle"``): Played when the entity using this graphic is just
+standing around and not doing anything. This will be played a max of once per 6 seconds.
+- Walk Animation (``"walk"``): Played when the entity using this graphic is walking.
+- Attack Animation (``"attack"``): Played when the entity using this graphic attacks.
+- Reload Animation (``"reload"``): Played when the entity using this graphic is reloading
+its weapon. Only applies to ranged entities.
+- Busy Animation (``"busy"``): Played when the entity using this graphic is busy doing
+something (e.g. training a unit, building a mechanical unit, etc). Only applies to buildings
+- Cast Animation (``"cast"``): Played when the entity using this graphic "casts" (or
+throws) something (e.g. a spell, or a grenade).
+- Damaged, Busy Animation (``"busyDamaged1"``): Played when the entity using this graphic
+is busy doing something, and is moderately damaged. Only applies to buildings
+- Heavily Damaged, Busy Animation (``"busyDamaged2"``): Played when the entity using this
+graphic is busy doing something, and is heavily damaged. Only applies to buildings.
