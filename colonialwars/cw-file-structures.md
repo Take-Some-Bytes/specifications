@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 5.
+Draft Revision 6.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -228,7 +228,7 @@ Main image of the graphic must contain 4 angles of the same image, stacked on to
 other, starting with the image that faces forward on the top, and moving down clockwise.
 In ASCII art, it MAY look like this:
 ```none
-               __________________
+            [ +------------------+
 Main Image -[ |                  |
             [ |  Forward-facing  |
             [ |       Image      |
@@ -256,9 +256,21 @@ Main Image -[ |                  |
 ```
 
 (Of course, you don't have to arrange your sub-images like this, but if you don't, the renderer
-would draw your entities as if they were walking backward all the time.)
+wouldn't render your graphics properly.)
 
 The same rules apply for graphic animations.
+
+**NOTE**: for graphic animations, all the animations for a single angle *must* be in a single line,
+like this:
+```none
+             [ +------------------+------------------+
+(Animation) -[ |                  |                  |
+             [ |  Forward-facing  |  Forward-facing  |
+             [ |    animation     |    animation     | ...Etc.
+             [ |     frame 1      |     frame 2      |
+             [ |                  |                  |
+             [ +------------------+------------------+
+```
 
 #### 6.1.2. Graphic Images
 A graphic could have multiple *static* images associated with it. The allowed static images
@@ -314,6 +326,11 @@ graphic. An example graphic with animations MAY look like this:
   }
 }
 ```
+
+The ``"x"`` and ``"y"`` properties of an animation specifies the relative coordinates where
+the frames for the animation begins. The ``"width"`` and ``"height"`` properties specify the
+total width and height of all the frames combined. The ``"frameSize"`` property specifies
+the size of each frame.
 
 The full list of acceptable animations are:
 - Death Animation (``"die"``): Played when the entity using this graphic dies.
