@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 6.
+Draft Revision 7.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -24,6 +24,10 @@ in; all aspects of gameplay MUST occur on the _Map_.
 
 Any text enclosed in angled brackets (&lt;like this&gt;) means "replace this text with an
 appropriate value".
+
+Any and all comments contained in JSONC (JSON with comments) code blocks MUST be interpreted as imperative commands.
+
+The phrase "MAY ONLY" (case-insensitive) is to be interpreted as "MUST".
 
 ## 2. General File Format
 The general file format for Colonial Wars Files is as follows:
@@ -53,10 +57,11 @@ A Map Save File's structure is as follows:
   "meta": {
     // Must only have alphanumerical characters and spaces
     "name": "Valley",
-    // Either teams, koth, or siege. Case-insensitive.
+    // Must be either teams, koth, or siege. Case-insensitive.
     "mode": "teams",
-    // Must be a positive integer
-    "maxPlayers": 40,
+    // Must be a positive number equal to the maximum players of each team
+    // combined.
+    "maxPlayers": 20,
     "worldLimits": {
       // Must have x and y, and those properties must have a number describing
       // the maximums for each axis.
@@ -73,10 +78,11 @@ A Map Save File's structure is as follows:
         "spawnPosition": { "x": 100, "y": 100 },
         // A small description of the team. Must be less than 150 characters.
         "description": "The British.",
-        // Must be a positive integer. This describes the maximum amount
-        // of players on this team.
+        // Must be a positive integer greater than zero. This describes the
+        // maximum amount of players on this team.
         "maxPlayers": 10
       },
+      // There MUST be at least two teams on a map.
       {
         "name": "French",
         "spawnPosition": { "x": 5900, "y": 5900 },
@@ -126,7 +132,14 @@ point-to-capture does not have to be a hill.
 The ``"siege"`` game mode denotes a game in which one team defends a given position
 for a specific amount of time, while the other team(s) try to capture that point.
 
-### 3.2. File Dependencies
+### 3.2. Map Teams
+A map may have multiple teams, which players will fight for. Multiple players may be on a team.
+Teams with duplicate names are not allowed.
+
+A map MUST have at least 2 (two) teams, and at most 8 (eight). The spawn position of each team
+SHOULD NOT overlap, unless you want carnage at the very start of each game.
+
+### 3.3. File Dependencies
 A Map Save File could have dependencies; namely, it could request to use an existing
 Unit, Building, or Graphics Data File in the game, and possibly extend them if it wants.
 
@@ -141,8 +154,10 @@ and ``"graphicsDataExtends"`` fields MUST all have the absolute value ``"none"``
 
 ## 4. Unit Data File
 TODO
+
 ## 5. Building Data File
 TODO
+
 ## 6. Graphics Data File
 For a JSON file to be treated as a Graphics Data File, its ``"configType"`` field MUST have the
 absolute value ``graphics-data``.
@@ -162,9 +177,10 @@ A Graphics Data File's structure is as follows:
       // Must match the corresponding key (look up).
       "id": "tree1",
       // A name for the current graphic.
-      // May only have alphanumeric characters and spaces.
+      // MAY ONLY have alphanumeric characters and spaces.
       "name": "Tree 1",
       // The path to the file to take this graphic's image and animations from.
+      // MUST be a valid file path.
       "file": "/imgs/game-images/trees-sheet.png",
       // How many angles the specified graphic has. May only be 1, 2, 4, or 8.
       "angles": 1,
@@ -208,7 +224,8 @@ be 1, 2, 4, or 8. See [Section 6.1.1](#6.1.1.-graphic-angles) for how this affec
 graphic's animations and main image.
 - ``"hasAnimations"``: This specifies whether the current graphic has animations
 associated with it. It MUST be a boolean.
-- ``"mainImg"``: See [Section 6.1.2](#6.1.2.-graphic-images).
+- ``"mainImg"``, ``"damaged1Img"``, ``"damaged2Img"``, ``"constructing1Img"``: See
+[Section 6.1.2](#6.1.2.-graphic-images).
 - ``"animations"``: See [Section 6.1.3](#6.1.3.-graphic-animations).
 
 If a graphics data parser encounters animation-related fields (in the ``"animations"`` object)
@@ -217,7 +234,7 @@ and the ``"hasAnimations"`` field is false, the animations MUST be ignored. If t
 MUST be thrown.
 
 #### 6.1.1. Graphic Angles
-Since units would likely have to be able to face left, right, forward, and backward, a graphic
+Since units would likely have to be able to face left, right, forwards, and backwards, a graphic
 could have angles. A graphic could have either 1, 2, 4, or 8 angles. The number of angles a
 graphic has defines how the renderer draws the graphic, and how the image needs to be layed out.
 
@@ -226,42 +243,43 @@ angles for each [image](#6.1.2.-graphic-images) and [animation](#6.1.3.-graphic-
 the graphic. This means that, for example, the part of the underlying file that houses the
 Main image of the graphic must contain 4 angles of the same image, stacked on top of each
 other, starting with the image that faces forward on the top, and moving down clockwise.
-In ASCII art, it MAY look like this:
+In ASCII art, it may look like this:
 ```none
-            [ +------------------+
-Main Image -[ |                  |
-            [ |  Forward-facing  |
-            [ |       Image      |
-            [ |                  |
-            [ |                  |
-            [ +------------------+
-            [ |                  |
-            [ |    Left-facing   |
-            [ |       Image      |
-            [ |                  |
-            [ |                  |
-            [ +------------------+
-            [ |                  |
-            [ |    Back-facing   |
-            [ |       Image      |
-            [ |                  |
-            [ |                  |
-            [ +------------------+
-            [ |                  |
-            [ |   Right-facing   |
-            [ |       Image      |
-            [ |                  |
-            [ |                  |
-            [ +------------------+
+       [ +------------------+
+Image -[ |                  |
+       [ |  Forward-facing  |
+       [ |       Image      |
+       [ |                  |
+       [ |                  |
+       [ +------------------+
+       [ |                  |
+       [ |    Left-facing   |
+       [ |       Image      |
+       [ |                  |
+       [ |                  |
+       [ +------------------+
+       [ |                  |
+       [ |    Back-facing   |
+       [ |       Image      |
+       [ |                  |
+       [ |                  |
+       [ +------------------+
+       [ |                  |
+       [ |   Right-facing   |
+       [ |       Image      |
+       [ |                  |
+       [ |                  |
+       [ +------------------+
 ```
 
-(Of course, you don't have to arrange your sub-images like this, but if you don't, the renderer
+(Of course, you don't have to arrange your sub-images like this, but it is highly RECOMMENDED
+to do so. If you don't, the renderer
 wouldn't render your graphics properly.)
 
 The same rules apply for graphic animations.
 
-**NOTE**: for graphic animations, all the animations for a single angle *must* be in a single line,
-like this:
+**NOTE**: for graphic animations, all the animations for a single angle *must* be in a single
+line, like this:
 ```none
              [ +------------------+------------------+
 (Animation) -[ |                  |                  |
@@ -273,27 +291,50 @@ like this:
 ```
 
 #### 6.1.2. Graphic Images
-A graphic could have multiple *static* images associated with it. The allowed static images
-are: Main (``"mainImg"``), Damaged (``"damaged1Img"``), Heavily Damaged (``"damaged2Img"``),
-and Constructing (``"constructing1Img"``). Damaged, Heavily Damaged, and Constructing are only
-used for buildings.
+A graphic could have multiple *static* images associated with it.
 
-A graphics data parser SHOULD ignore unrecognized image fields.
+Example:
+```jsonc
+{
+  "house": {
+    // Other fields omitted.
+    "mainImg": {
+      // X position of the top-left corner of the image.
+      "x": 0,
+      // Y position of the top-left corner of the image.
+      "y": 0,
+      // Width and height of the image.
+      "w": 100,
+      "h": 100
+    }
+  }
+}
+```
+The ``"x"`` and ``"y"`` properties specify the relative coordinates of the top left corner of
+the static image. The ``"w"`` and ``"h"`` properties specify the total width and height of the
+image.
 
-The Main image (``"mainImg"``) specifies the main image the graphic will be represented
+If all fields of a static image are [falsy](
+  https://developer.mozilla.org/en-US/docs/Glossary/Falsy
+), the parser MUST assume that the static image is equivalent to the JSON value ``null``.
+
+Field values may not be negative or floating point. An error MUST
+be thrown if a negative number or a floating point number is encountered.
+
+The full list of acceptable static images are:
+- Main Image (``"mainImg"``): specify the main image the graphic will be represented
 with in-game. The ``"mainImg"`` will be used for purposes such as display in buttons which
 wish to use the graphic's image, and may directly represent an entity if it has no
-animations.
-
-The Damaged image (``"damaged1Img"``) specifies the image that will be shown when the
+animations. This image is REQUIRED.
+- Damaged Image (``"damaged1Img"``): specify the image that will be shown when the
 entity using this graphic is moderately damaged. This image only applies to buildings.
-
-The Heavily Damaged image (``"damaged2Img"``) specifies the image that will be shown
+- Heavily Damaged Image (``"damaged2Img"``) specifies the image that will be shown
 when the entity using this graphic is heavily damaged. This image only applies to buildings.
-
-The Constructing image (``"constructingImg"``) specifies the image that will be shown
+- Constructing Image (``"constructingImg"``) specifies the image that will be shown
 when the entity using this graphic is currently under construction. This image only applies
 to buildings.
+
+A graphics data parser SHOULD ignore unrecognized static image fields.
 
 #### 6.1.3. Graphic Animations
 A graphic could also have multiple *dynamic* animations associated with it.
@@ -332,6 +373,13 @@ the frames for the animation begins. The ``"width"`` and ``"height"`` properties
 total width and height of all the frames combined. The ``"frameSize"`` property specifies
 the size of each frame.
 
+If all fields of a dynamic animation are [falsy](
+  https://developer.mozilla.org/en-US/docs/Glossary/Falsy
+), the parser MUST assume that the animation is equivalent to the JSON value ``null``.
+
+Field values may not be a negative number or a floating point number. An error MUST
+be thrown if a negative number or a floating point number is encountered.
+
 The full list of acceptable animations are:
 - Death Animation (``"die"``): Played when the entity using this graphic dies.
 - Idle Animation (``"idle"``): Played when the entity using this graphic is just
@@ -348,3 +396,5 @@ throws) something (e.g. a spell, or a grenade).
 is busy doing something, and is moderately damaged. Only applies to buildings
 - Heavily Damaged, Busy Animation (``"busyDamaged2"``): Played when the entity using this
 graphic is busy doing something, and is heavily damaged. Only applies to buildings.
+
+A graphics data parser SHOULD ignore unrecognized animation fields.
