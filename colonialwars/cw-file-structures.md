@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 8.
+Draft Revision 9.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -402,7 +402,205 @@ graphic is busy doing something, and is heavily damaged. Only applies to buildin
 A graphics data parser SHOULD ignore unrecognized animation fields.
 
 ## 7. Obstacles Data File
-TODO
+An Obstacles Data File defines a set of *physical obstacles* that could be present on a Colonial
+Wars map. Examples of entities suitable to treat as an obstacle are: trees, water, stones, or
+flowers. Obstacles cannot be destroyed, but other entities may be able to walk or be built on it.
+
+For a JSON file to be treated as a Obstacles Data File, its ``"configType"`` field MUST have the
+absolute value ``obstacles-data``.
+
+An Obstacles Data File's structure is as follows:
+```jsonc
+{
+  "configType": "obstacles-data",
+  "meta": {
+    "name": "Example Obstacles File"
+  },
+  "data": {
+    "tree1": {
+      // Must match the key of this value.
+      "id": "tree",
+      // May only have alphanumeric characters and spaces.
+      // The name of the obstacle.
+      "name": "Tree 1",
+      // A description of the obstacle. Not required in-game, only for
+      // when editing maps.
+      "description": "A tree.",
+      // Must contain the ID of a valid graphic.
+      "img": "tree_img_1",
+      // Set the scale of the image.
+      "imgScale": 1,
+      // Specify the obstacle type.
+      "isSolid": true,
+      "isLiquid": false,
+      "isDecoration": false,
+      // The depth of the current obstacle. Ignored if isLiquid is false.
+      "depth": 0,
+      // Specific entities to allow if isLiquid is true.
+      "allowDocks": false,
+      "allowBoats": false,
+      // Configure entity blocking. Ignored if isLiquid is true.
+      "blocksEntities": true,
+      "blocksEntitiesFilter": [],
+      "blocksEntitiesFilterExclude": [],
+      // Set the dimensions of this obstacle. Ignored if isLiquid or
+      // isDecoration is true.
+      "dimensions": {
+        "w": 100,
+        "l": 100,
+        "h": 500
+      },
+      // A list of modifiers that get applied when an entity walks over
+      // this obstacle. Ignored if isDecoration is true.
+      "modifiers": [],
+      // A list of modifiers this obstacle spawns with. Ignored if isDecoration is true.
+      "spawnModifiers": [],
+      // A sound to play while an entity is MOVING through this obstacle.
+      // Ignored if isDecoration is true.
+      "sound": "",
+      // How loud to play the sound. Ignored if isDecoration is true.
+      "soundVolume": 1,
+    }
+  }
+}
+```
+
+### 7.1. Specifying an Obstacle
+To specify an obstacle, a new value must be entered into the ``"data"`` object of the Obstacles
+Data File. Each new value's key MUST be a string that only contains lowercase letters, numbers,
+and underscores.
+
+The new value MUST be an object, with the following fields:
+- ``"id"``: This MUST match the current obstacle's key. An obstacle's ID may only have lowercase
+letters, underscores and numbers.
+- ``"name"``: This MUST be a string, which may only have alphanumeric characters and spaces.
+- ``"img"``: This MUST be a string, and it MUST be a valid graphic's ID. This specifies the
+graphic this obstacle will use.
+- ``"imgScale"``: This specifies the amount to scale the selected graphic for this entity by.
+This field MUST be an integer, and MUST be interpreted as a percentage in decimal format
+(e.g. 1 == 100%).
+- ``"isLiquid"``, ``"isSolid"``, ``"isDecoration"``: See [Section 7.2](#7.2.-obstacle-type). At
+least *one* of these properties MUST be ``true``.
+- ``"isLiquid"``, ``"depth"``, ``"allowDocks"``, ``"allowBoats"``: See [Section 7.2.1](#7.2.1.-liquid-obstacles). These options are used to configure liquid obstacles.
+- ``"blocksEntities"``, ``"blocksEntitiesFilter"``, ``"blocksEntitiesFilterExclude"``: Configure
+if the current obstacle blocks entities from walking over it, and if so, which entities it blocks.
+See [Section 7.3](#7.3-blocking-entities-from-passing-through-obstacles) for details.
+- ``"dimensions"``: Specify the dimensions of the obstacle. Only applies to
+[solid obstacles](#7.2.2.-solid-obstacles).
+- ``"modifiers"``: This MUST be an array of strings. This specifies modifiers that get applied
+to entities that walk over this obstacle.
+- ``"spawnModifiers"``: This MUST be an array of strings. This specifies modifiers that the
+current obstacle spawns with.
+- ``"sound"``, ``"soundVolume"``: Options for playing a sound when an entity walks *on* the
+current obstacle. See [Section 7.4](#7.4.-obstacles-and-sounds) for details.
+
+### 7.2. Obstacle Type
+An obstacle could either be a *liquid*, *solid*, or *decoration*. Liquid obstacles are free-form,
+and could be placed anywhere. Solid obstacles have a specific size and height, and may not overlap.
+Decorations are for decorative purposes only, may overlap, and have no effect on actual gameplay.
+
+A good example of a liquid obstacle is water. See [Section 7.2.1](#7.2.1.-liquid-obstacles) about 
+liquid obstacles. A good example of a solid obstacle is a tree. See
+[Section 7.2.2](#7.2.2.-solid-obstacles) about solid obstacles. A good example of a decorative
+obstacle is a flower. See [Section 7.2.3](#7.2.3.-decorative-obstacles) about decorative obstacles.
+
+Both liquid and solid obstacles could be configured to *allow* entities to walk over (in the case
+of liquids) or pass through (in the case of solids), as opposed to only allowing projectiles to
+fly over them (in the case of liquids) or not allowing any entities through at all (in the case
+of solids). To configure liquids to allow entities to walk over them, or to configure solids to
+allow entities to pass through them, refer to
+[Section 7.3](#7.3-blocking-entities-from-passing-through-obstacles).
+
+As decorations do not have any effect on the actual gameplay, entities will be able to walk over
+(and be built on) any decoration.
+
+#### 7.2.1. Liquid Obstacles
+A *liquid* obstacle (e.g. water) is a free-form obstacle that has no defined shape or size. To
+specify a liquid, the ``"isLiquid"`` property of the current obstacle MUST be set to ``true``.
+
+Liquid obstacles could be configured to allow boats and docks to be built on it, thus creating a
+sea battle of sorts. The ``"allowDocks"`` and ``"allowBoats"`` MUST be set to ``true`` in order
+to allow docks to be built on it and boats to sail on it, respectively.
+
+The ``"depth"`` property of liquid obstacles specify how deep the liquid is in pixels. This MUST
+be an unsigned integer greater than zero, and is REQUIRED. When walking in a liquid, entities will
+sink ``"depth"`` pixels under the liquid. This is only graphical, and has not effect on gameplay.
+
+The depth of a liquid could also determine if it blocks entities from walking on it. See
+[Section 7.3.1](#7.3.1.-liquid-obstacles) for details.
+
+#### 7.2.2. Solid Obstacles
+A *solid* obstacle (e.g. a tree) is an obstacle which has a defined size and. Solid obstacles may
+*not* overlap. To specify a solid, the ``"isSolid"`` property of the current obstacle MUST be set
+to ``true``.
+
+Solid obstacles MUST have a defined size. The size of a solid obstacle is specified with the
+``"dimensions"`` object. The ``"w"`` and ``"l"`` properties set how wide and long an obstacle is,
+respective, and the ``"h"`` property determines the height of the obstacle.
+
+For example, the following ``"dimensions"`` object will specify an obstacle that covers 100x100
+pixels of ground and is 280 pixels high.
+```jsonc
+{
+  "dimensions": {
+    "w": 100,
+    "l": 100,
+    "h": 280
+  }
+}
+```
+
+Entities could be blocked from passing through solid obstacles. See
+[Section 7.3.2](#7.3.2.-solid-obstacles) for details.
+
+#### 7.2.3 Decorative Obstacles
+A *decorative* obstacle (e.g. a flower) is an "obstacle" that serves a purely decorative purpose.
+Decorative obstacles will *not* have any effect on resulting gameplay. It will not block entities
+from walking on it, and it may be placed anywhere on the ground or on top of a liquid obstacle.
+
+The visual size of the obstacle will be determined by the size of the graphic the obstacle is
+assigned.
+
+### 7.3. Blocking Entities From Passing Through Obstacles
+It is possible to block entities from passing through obstacles. Moreover, it is possible to
+control *what* entities are blocked from passing through obstacles, and which are not. This gives
+map editors a great deal of flexibility when dealing with obstacles.
+
+There are two ways of specifying which entities an obstacle blocks: for liquid obstacles, the
+value of the ``"depth"`` property determines if entities are blocked from walking over it. For
+solid obstacles, the ``blocksEntities`` properties can be used to configure if entities are blocked,
+which entities are blocked, and which entities are not blocked.
+
+Decorative obstacles cannot block entities.
+
+#### 7.3.1. Liquid obstacles
+If the depth (specified by the ``"depth"`` property) of a liquid is equal to or greater than the
+number 100, it will block entities from walking built over it. Boats are exempt from this.
+
+Buildings will always be blocked from being built on liquids, regardless of liquid depth. Docks
+are exempt from this.
+
+#### 7.3.2. Solid obstacles
+To block entities from passing through solid obstacles, the ``"blocksEntities"`` property MUST be
+``true``. Entities are only blocked if they touch the solid obstacle's hitbox, which is calculated
+using the values of the ``"dimensions"`` object.
+
+It is also possible to control *which* entities are blocked, and which aren't. The 
+``"blocksEntitiesFilter"`` array specifies a list of requirements an entity has to meet in order
+to be blocked. The ``"blocksEntitiesFilterExclude"`` array, the inverse of ``"blocksEntitiesFilter'``,
+specifies a list of requirements an entity MUST NOT meet in order to be blocked. The values of
+both the above properties MUST be an array of strings.
+
+### 7.4. Obstacles and Sounds
+Sounds could be played whenever an entity *moves* over an obstacle. The sound will only be played
+when an entity *moves*, and is inside the hitbox (in the case of solid obstacles) or on top
+(in the case of liquid obstacles) of the current obstacle.
+
+Use the ``"sound"`` field to specify the name of the sound to play. This field MUST have a string
+value. Use the ``"soundVolume"`` field to set the sound's volume. This field MUST be an integer,
+and MUST be interpreted as a percentage in decimal format (e.g. 1 == 100%).
+
+Decorative obstacles will not be able to play sounds.
 
 ## 8. Abilities Data File
 TODO
@@ -634,41 +832,3 @@ To set the volume of the sound-to-play, use ``"soundVolume"``. The value of ``"s
 a floating-point number, and it MUST be interpreted as a decimal-percentage. For example, the integer
 ``1`` means 100% of the sound's original volume, the decimal ``0.5`` means 50% of the sound's
 original volume, and the decimal ``1.5`` means 150%.
-
-<!-- An Obstacles Data File defines a set of *physical obstacles* that could be present on a Colonial
-Wars map. Examples of entities suitable to treat as an obstacle are: trees, water, stones, or
-flowers. Obstacles cannot be destroyed, but other entities may be able to walk or be built on it.
-
-For a JSON file to be treated as a Obstacles Data File, its ``"configType"`` field MUST have the
-absolute value ``obstacles-data``.
-
-An Obstacles Data File's structure is as follows:
-```jsonc
-{
-  "configType": "obstacles-data",
-  "meta": {
-    "name": "Example Obstacles File"
-  },
-  "data": {
-    "tree": {}
-  }
-}
-```
-
-### 7.1. Specifying an Obstacle
-To specify an obstacle, a new value must be entered into the ``"data"`` object of the Obstacles
-Data File. Each new value's key MUST be a string that only contains lowercase letters, numbers,
-and underscores.
-
-The new value MUST be an object, with the following fields:
-- ``"id"``: This MUST match the current obstacle's key.
-- ``"name"``: This MUST be a string, which may only have alphanumeric characters and spaces.
-- ``"img"``: This MUST be a string, and it MUST be a valid graphic's ID. This specifies the
-graphic this obstacle will use.
-- ``"blocksBuilding"``: This MUST be a boolean. This specifies whether this obstacle blocks
-buildings from being built on it. Useful for obstacles like water, which entities could walk
-through, but buildings could not be built on.
-- ``"blocksPathing"``: This MUST be a boolean. This specifies whether this obstacle blocks
-entities from moving through it. If this is true then ``"blocksBuilding"`` must also be true.
-- ``"modifiers"``: This MUST be an array of strings. This specifies modifiers that get applied
-to entities that are  -->
