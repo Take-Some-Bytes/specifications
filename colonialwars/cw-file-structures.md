@@ -39,13 +39,13 @@ The general file format for Colonial Wars Files is as follows:
 }
 ```
 The ``"configType"`` field MUST have one of these string values:
-- ``map-config``: This denotes a config file for a Map Save File. See [Section 3](#3.-map-save-file).
-- ``unit-data``: This denotes a config file for a Unit Data File. See [Section 4](#4.-unit-data-file).
-- ``building-data``: This denotes a config file for a Building Data File. See [Section 5](#5.-building-data-file).
-- ``graphics-data``: This denotes a config file for a Graphics Data File. See [Section 6](#6.-graphics-data-file).
-- ``obstacles-data``: This denotes a config file for a Obstacles Data File. See [Section 7](#7.-obstacles-data-file).
-- ``abilities-data``: This denotes a config file for an Abilities Data File. See [Section 8](#8.-abilities-data-file).
-- ``modifiers-data``: This denotes a config file for a Modifiers Data File. See [Section 9](#9.-modifiers-data-file).
+- ``map-config``: This denotes a config file for a Map Save File. See [Section 3](#3-map-save-file).
+- ``unit-data``: This denotes a config file for a Unit Data File. See [Section 4](#4-unit-data-file).
+- ``building-data``: This denotes a config file for a Building Data File. See [Section 5](#5-building-data-file).
+- ``graphics-data``: This denotes a config file for a Graphics Data File. See [Section 6](#6-graphics-data-file).
+- ``obstacles-data``: This denotes a config file for a Obstacles Data File. See [Section 7](#7-obstacles-data-file).
+- ``abilities-data``: This denotes a config file for an Abilities Data File. See [Section 8](#8-abilities-data-file).
+- ``modifiers-data``: This denotes a config file for a Modifiers Data File. See [Section 9](#9-modifiers-data-file).
 
 The contents of the ``meta`` and ``data`` fields depend on the configuration type.
 
@@ -223,13 +223,13 @@ following fields:
 - ``"name"``: This MUST be a string, which may only have alphanumeric characters and spaces.
 - ``"file"``: This MUST be a string, AND a valid path to an image file.
 - ``"angles"``: This specifies how many angles the specified graphic has. It may only be 1,
-2, 4, or 8. See [Section 6.1.1](#6.1.1.-graphic-angles) for how this affects a graphic's
+2, 4, or 8. See [Section 6.1.1](#611-graphic-angles) for how this affects a graphic's
 animations and main image.
 - ``"hasAnimations"``: This specifies whether the current graphic has animations associated
 with it. It MUST be a boolean.
 - ``"mainImg"``, ``"damaged1Img"``, ``"damaged2Img"``, ``"constructing1Img"``: See
-[Section 6.1.2](#6.1.2.-graphic-images).
-- ``"animations"``: See [Section 6.1.3](#6.1.3.-graphic-animations).
+[Section 6.1.2](#612-graphic-images).
+- ``"animations"``: See [Section 6.1.3](#613-graphic-animations).
 
 If a graphics data parser encounters animation-related fields (in the ``"animations"`` object)
 and the ``"hasAnimations"`` field is false, the animations MUST be ignored. If the
@@ -241,7 +241,7 @@ could have angles. A graphic could have either 1, 2, 4, or 8 angles. The number 
 graphic has defines how the renderer draws the graphic, and how the image needs to be layed out.
 
 For example, if a graphic has 4 angles, the underlying file for the graphic must also have 4
-angles for each [image](#6.1.2.-graphic-images) and [animation](#6.1.3.-graphic-animations) of
+angles for each [image](#612-graphic-images) and [animation](#613-graphic-animations) of
 the graphic. This means that, for example, the part of the underlying file that houses the
 Main image of the graphic must contain 4 angles of the same image, stacked on top of each
 other, starting with the image that faces forward on the top, and moving down clockwise.
@@ -479,37 +479,37 @@ graphic this obstacle will use.
 - ``"imgScale"``: This specifies the amount to scale the selected graphic for this entity by.
 This field MUST be an integer, and MUST be interpreted as a percentage in decimal format
 (e.g. 1 == 100%).
-- ``"isLiquid"``, ``"isSolid"``, ``"isDecoration"``: See [Section 7.2](#7.2.-obstacle-type). At
+- ``"isLiquid"``, ``"isSolid"``, ``"isDecoration"``: See [Section 7.2](#72-obstacle-type). At
 least *one* of these properties MUST be ``true``.
-- ``"isLiquid"``, ``"depth"``, ``"allowDocks"``, ``"allowBoats"``: See [Section 7.2.1](#7.2.1.-liquid-obstacles). These options are used to configure liquid obstacles.
+- ``"isLiquid"``, ``"depth"``, ``"allowDocks"``, ``"allowBoats"``: See [Section 7.2.1](#721-liquid-obstacles). These options are used to configure liquid obstacles.
 - ``"blocksEntities"``, ``"blocksEntitiesFilter"``, ``"blocksEntitiesFilterExclude"``: Configure
 if the current obstacle blocks entities from walking over it, and if so, which entities it blocks.
-See [Section 7.3](#7.3-blocking-entities-from-passing-through-obstacles) for details.
+See [Section 7.3](#73-blocking-entities-from-passing-through-obstacles) for details.
 - ``"dimensions"``: Specify the dimensions of the obstacle. Only applies to
-[solid obstacles](#7.2.2.-solid-obstacles).
+[solid obstacles](#722-solid-obstacles).
 - ``"modifiers"``: This MUST be an array of strings. This specifies modifiers that get applied
 to entities that walk over this obstacle.
 - ``"spawnModifiers"``: This MUST be an array of strings. This specifies modifiers that the
 current obstacle spawns with.
 - ``"sound"``, ``"soundVolume"``: Options for playing a sound when an entity walks *on* the
-current obstacle. See [Section 7.4](#7.4.-obstacles-and-sounds) for details.
+current obstacle. See [Section 7.4](#74-obstacles-and-sounds) for details.
 
 ### 7.2. Obstacle Type
 An obstacle could either be a *liquid*, *solid*, or *decoration*. Liquid obstacles are free-form,
 and could be placed anywhere. Solid obstacles have a specific size and height, and may not overlap.
 Decorations are for decorative purposes only, may overlap, and have no effect on actual gameplay.
 
-A good example of a liquid obstacle is water. See [Section 7.2.1](#7.2.1.-liquid-obstacles) about 
+A good example of a liquid obstacle is water. See [Section 7.2.1](#721-liquid-obstacles) about 
 liquid obstacles. A good example of a solid obstacle is a tree. See
-[Section 7.2.2](#7.2.2.-solid-obstacles) about solid obstacles. A good example of a decorative
-obstacle is a flower. See [Section 7.2.3](#7.2.3.-decorative-obstacles) about decorative obstacles.
+[Section 7.2.2](#722-solid-obstacles) about solid obstacles. A good example of a decorative
+obstacle is a flower. See [Section 7.2.3](#723-decorative-obstacles) about decorative obstacles.
 
 Both liquid and solid obstacles could be configured to *allow* entities to walk over (in the case
 of liquids) or pass through (in the case of solids), as opposed to only allowing projectiles to
 fly over them (in the case of liquids) or not allowing any entities through at all (in the case
 of solids). To configure liquids to allow entities to walk over them, or to configure solids to
 allow entities to pass through them, refer to
-[Section 7.3](#7.3-blocking-entities-from-passing-through-obstacles).
+[Section 7.3](#73-blocking-entities-from-passing-through-obstacles).
 
 As decorations do not have any effect on the actual gameplay, entities will be able to walk over
 (and be built on) any decoration.
@@ -527,7 +527,7 @@ be an unsigned integer greater than zero, and is REQUIRED. When walking in a liq
 sink ``"depth"`` pixels under the liquid. This is only graphical, and has not effect on gameplay.
 
 The depth of a liquid could also determine if it blocks entities from walking on it. See
-[Section 7.3.1](#7.3.1.-liquid-obstacles) for details.
+[Section 7.3.1](#731-liquid-obstacles) for details.
 
 #### 7.2.2. Solid Obstacles
 A *solid* obstacle (e.g. a tree) is an obstacle which has a defined size and. Solid obstacles may
@@ -551,7 +551,7 @@ pixels of ground and is 280 pixels high.
 ```
 
 Entities could be blocked from passing through solid obstacles. See
-[Section 7.3.2](#7.3.2.-solid-obstacles) for details.
+[Section 7.3.2](#732-solid-obstacles) for details.
 
 #### 7.2.3 Decorative Obstacles
 A *decorative* obstacle (e.g. a flower) is an "obstacle" that serves a purely decorative purpose.
@@ -707,16 +707,16 @@ A description MUST NOT be longer than 200 characters.
 MUST be interpreted as Infinity, meaning the modifier lasts forever.
 - ``"maxStack"``: How many times the current modifier could stack. 0 or a negative number
 MUST be interpreted as Infinity, meaning the modifier could stack infinitely.
-- ``"modifications"``: See [Section 9.2](#9.2.-applying-modifications).
+- ``"modifications"``: See [Section 9.2](#92-applying-modifications).
 - ``"auras"``, ``"auraHitsSelf"``, ``"auraHitsFriendly"``, ``"auraHitsAllied"``,
 ``"auraHitsEnemy"``,``"auraColour"``, ``"auraTargetFilters"``, ``"auraTargetFiltersExclude"``:
-See [Section 9.3](#9.3.-specifying-auras).
+See [Section 9.3](#93-specifying-auras).
 - ``"disableCommands"``: A list of commands to disable while this modifier is being applied.
 This MUST be an array of strings. If an unrecognized command is entered, it SHOULD be ignored.
 - ``"changeEntityImg"``, ``"entityImg"``, ``"changeAtkEffect"`` ``"atkEffect"``: See
-[Section 9.4](#9.4.-changing-images-when-a-modifier-is-applied).
+[Section 9.4](#94-changing-images-when-a-modifier-is-applied).
 - ``"effects"``: A list of graphic effects to display on entities who have this modifier applied.
-- ``"sound"``, ``"soundVolume"``: See [Section 9.5](#9.5.-playing-sounds-when-a-modifier-is-applied).
+- ``"sound"``, ``"soundVolume"``: See [Section 9.5](#95-playing-sounds-when-a-modifier-is-applied).
 - ``"killModifiers"``: A list of modifiers to remove from entities when they have this modifier
 applied to them. This MUST be an array of strings. If an unrecognized modifier is listed here, it 
 SHOULD be ignored.
@@ -733,7 +733,7 @@ is structured like so:
 ```
 
 The ``"field"`` field specifies a field to modify. The specified field SHOULD be a valid entity
-field, available to both [buildings](#5.-building-data-file) and [units](#4.-unit-data-file).
+field, available to both [buildings](#5-building-data-file) and [units](#4-unit-data-file).
 The ``"add"`` field specifies a numeric value to add to the specified field in ``"field"``.
 It MAY be a negative number. If the field being modified is not numeric:
 - If the field is a boolean field, add the value in the ``"add"`` field to the number 0 (zero).
