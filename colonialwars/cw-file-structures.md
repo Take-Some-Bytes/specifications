@@ -4,7 +4,7 @@ the Unit Data File, the Building Data File, and the Graphics Data File. This obs
 the ``file-structures.md`` file, which only defined Map Save Files (referred to in the
 document as a Save File).
 
-Draft Revision 9.
+Draft Revision 10.
 
 ## 1. Conformance Requirements
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -112,7 +112,13 @@ A Map Save File's structure is as follows:
   "data": {
     // Must be an object, with only lowercase letters and underscores as its keys.
     // See Section 6.1 for details.
-    "graphicsData": {}
+    "graphicsData": {},
+    // Must be an object, with only lowercase letters and underscores as its keys.
+    // See Section 7.1 for details.
+    "obstaclesData": {},
+    // Must be an object, with only lowercase letters and underscores as its keys.
+    // See Section 9.1 for details.
+    "modifiersData": {}
   }
 }
 ```
@@ -274,9 +280,9 @@ Image -[ |                  |
        [ +------------------+
 ```
 
-(Of course, you don't have to arrange your sub-images like this, but it is highly RECOMMENDED
-to do so. If you don't, the renderer
-wouldn't render your graphics properly.)
+(Of course, sub-images do not have to be arranged as specified above, but it is highly RECOMMENDED
+to do so. If sub-images are not arranged as specified, the renderer would not render the graphic
+correctly).
 
 The same rules apply for graphic animations.
 
